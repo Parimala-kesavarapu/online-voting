@@ -1,0 +1,27 @@
+@app.route('/register', methods=['POST'])
+def register():
+    if 'logged_in' in session:
+        name = request.form['name']
+        address = request.form['address']
+        dob = request.form['dob']
+        # Validate data and insert into database
+        conn = sqlite3.connect('voter_database.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO voters (name, address, dob, approved) VALUES (?, ?, ?, ?)', (name, address, dob, False))
+        conn.commit()
+        conn.close()
+        return redirect('/success')
+    else:
+        return 'Unauthorized. Please log in.'
+
+@app.route('/approve/<int:voter_id>')
+def approve_voter(voter_id):
+    if 'logged_in' in session:
+        conn = sqlite3.connect('voter_database.db')
+        cursor = conn.cursor()
+        cursor.execute('UPDATE voters SET approved = ? WHERE id = ?', (True, voter_id))
+        conn.commit()
+        conn.close()
+        return redirect('/dashboard')
+    else:
+        return 'Unauthorized. Please log in.'

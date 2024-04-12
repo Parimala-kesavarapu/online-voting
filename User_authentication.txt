@@ -1,0 +1,34 @@
+from flask import Flask, render_template, request, redirect, session
+import sqlite3
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        # Authenticate user (you can use a database or hardcoded credentials for simplicity)
+        if username == 'admin' and password == 'password':
+            session['logged_in'] = True
+            return redirect('/dashboard')
+        else:
+            return 'Invalid username or password'
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect('/login')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'logged_in' in session:
+        # Display dashboard for authenticated users
+        return render_template('dashboard.html')
+    else:
+        return redirect('/login')
+
+if __name__ == '__main__':
+    app.run(debug=True)

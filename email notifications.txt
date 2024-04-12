@@ -1,0 +1,28 @@
+from flask_mail import Message
+
+@app.route('/register', methods=['POST'])
+def register():
+    if 'logged_in' in session:
+        name = request.form['name']
+        address = request.form['address']
+        dob = request.form['dob']
+        # Validate data and insert into database
+        conn = sqlite3.connect('voter_database.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO voters (name, address, dob, approved) VALUES (?, ?, ?, ?)', (name, address, dob, False))
+        conn.commit()
+        
+        # Send email notification
+        send_notification_email(name)
+        
+        conn.close()
+        return redirect('/success')
+    else:
+        return 'Unauthorized. Please log in.'
+
+def send_notification_email(name):
+    msg = Message('Voter Registration Approval Pending',
+                  sender='your_email@example.com',
+                  recipients=['admin_email@example.com'])  # Replace with admin email
+    msg.body = f'Dear Admin,\n\nA new voter registration by {name} is pending approval. Please review and approve it as soon as possible.\n\nRegards,\nVoter Registration System'
+    mail.send(msg)
